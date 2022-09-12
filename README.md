@@ -1,0 +1,2 @@
+# feedCollector
+RSS-Intelligence project
