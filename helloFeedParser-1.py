@@ -5,7 +5,7 @@
 
 import urllib.request, feedparser
 import hashlib
-
+import textract
 #proxy = urllib.request.ProxyHandler({'http' : 'http://squidva.univ-ubs.fr:3128/'} )
 
 import time
@@ -21,7 +21,7 @@ from matplotlib.pyplot import title
 
 url_cert = 'https://www.cert.ssi.gouv.fr/alerte/feed/'
 url_cnn = 'http://rss.cnn.com/rss/edition.rss'
-#d = feedparser.parse(url_cert, handlers = [proxy])
+d = feedparser.parse(url_cert, handlers = [proxy])
 flux = feedparser.parse(url_cnn)
 url = flux.channel.link
 # print all posts
@@ -35,12 +35,20 @@ def getID(hash ):
 def retrieveData(entrie ):
     print('yeeah')
 
-def isInEntry(entrie ):
+
+
+
+
+"""def isInEntry(entrie ):
     if (entrie.popeye == None ):
         print(False)
     # entrie.title
     # entrie.description
     # entrie.pubDate
+"""
+#for post in flux.entries:
+#    isInEntry(post)
 
-for post in flux.entries:
-    isInEntry(post)
+
+
+#text = textract.process("path/to/file.extension")
