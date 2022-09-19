@@ -2,8 +2,9 @@
 
 
 #
-
 import urllib.request, feedparser
+from langdetect import detect
+import textract
 import hashlib
 
 #proxy = urllib.request.ProxyHandler({'http' : 'http://squidva.univ-ubs.fr:3128/'} )
@@ -26,26 +27,56 @@ flux = feedparser.parse(url_cnn)
 url = flux.channel.link
 # print all posts
 
-def generateID(post):
-    key = isInEntry(post,'title') + isInEntry(post,'description') + isInEntry(post,'pubDate')
+def getDictOfFoundedProps(post):
+    return {
+        "title" : isInEntry(post,"title"),
+        "description" : isInEntry(post,"description"),
+        "pubDate" : isInEntry(post,"pubDate"),
+        "link" : isInEntry(post,"link")
+    }
+
+def generateID(post, dictOfTruth):
+    key = getEntry(dictOfTruth,post,'title') + getEntry(dictOfTruth,post,'description') + getEntry(dictOfTruth,post,'pubDate') + getEntry(dictOfTruth,post,'link')
     if key != "":
         return hashlib.sha256(key.encode())
 
 def getID(hash ):
     return hash.hexdigest()
 
-def dataToAscii(post ):
-    return
+def getLanguage(post,dictOfTruth):
+    txt = getEntry(dictOfTruth,post,'title') + getEntry(dictOfTruth,post,'description') 
+    if txt != "":
+        return detect(txt)
+
+def dataToAscii(post, dictOfTruth ):
+    link = getEntry(dictOfTruth,post,'link')
+    if link != "":
+        try:
+            with urllib.request.urlopen(link) as f:
+                data = f.read().decode('utf-8')
+                print(data)
+                newFile = open('myFile.txt', "a")
+                return textract.process("./myFile.txt")
+        except:
+            return 
+        
 
 def isInEntry(post, name ):
     try:
-        return post[name]
+        if post[name] != 0:
+            return True
     except:
+        return False
+
+def getEntry(dictOfTruth, post, name):
+    if( dictOfTruth[name] ):
+        return post[name]
+    else:
         return ""
-    # entrie.title
-    # entrie.description
-    # entrie.pubDate
 
 for post in flux.entries:
-    print(getID(generateID(post)))
+    dictOfTruth = getDictOfFoundedProps(post)
+    # print(getID(generateID(post, dictOfTruth)))
+    # print(getLanguage(post, dictOfTruth))
+    dataToAscii(post, dictOfTruth)
     
