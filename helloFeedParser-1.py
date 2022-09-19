@@ -26,21 +26,26 @@ flux = feedparser.parse(url_cnn)
 url = flux.channel.link
 # print all posts
 
-def generateID(link ):
-    return hashlib.sha256(link.encode())
+def generateID(post):
+    key = isInEntry(post,'title') + isInEntry(post,'description') + isInEntry(post,'pubDate')
+    if key != "":
+        return hashlib.sha256(key.encode())
 
 def getID(hash ):
     return hash.hexdigest()
 
-def retrieveData(entrie ):
-    print('yeeah')
+def dataToAscii(post ):
+    return
 
-def isInEntry(entrie ):
-    if (entrie.popeye == None ):
-        print(False)
+def isInEntry(post, name ):
+    try:
+        return post[name]
+    except:
+        return ""
     # entrie.title
     # entrie.description
     # entrie.pubDate
 
 for post in flux.entries:
-    isInEntry(post)
+    print(getID(generateID(post)))
+    
