@@ -77,5 +77,5 @@ def getEntry(dictOfTruth, post, name):
 
 for post in flux.entries:
     dictOfTruth = getDictOfFoundedProps(post)
-    print(dataToAscii(post, dictOfTruth))
+    #print(dataToAscii(post, dictOfTruth))
     
