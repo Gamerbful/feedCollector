@@ -2,6 +2,8 @@
 
 
 #
+from bs4 import BeautifulSoup
+import pickle
 import urllib.request, feedparser
 from langdetect import detect
 import textract
@@ -54,12 +56,11 @@ def dataToAscii(post, dictOfTruth ):
         try:
             with urllib.request.urlopen(link) as f:
                 data = f.read().decode('utf-8')
-                print(data)
                 newFile = open('myFile.txt', "a")
+                newFile.write(data)
                 return textract.process("./myFile.txt")
         except:
-            return 
-        
+            return
 
 def isInEntry(post, name ):
     try:
@@ -76,7 +77,5 @@ def getEntry(dictOfTruth, post, name):
 
 for post in flux.entries:
     dictOfTruth = getDictOfFoundedProps(post)
-    # print(getID(generateID(post, dictOfTruth)))
-    # print(getLanguage(post, dictOfTruth))
-    dataToAscii(post, dictOfTruth)
+    print(dataToAscii(post, dictOfTruth))
     
