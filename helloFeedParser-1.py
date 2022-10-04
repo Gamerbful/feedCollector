@@ -2,12 +2,15 @@
 
 
 #
+import sys
+from this import d
 from bs4 import BeautifulSoup
 import pickle
 import urllib.request, feedparser
 from langdetect import detect
 import textract
 import hashlib
+import numpy as np
 
 #proxy = urllib.request.ProxyHandler({'http' : 'http://squidva.univ-ubs.fr:3128/'} )
 
@@ -25,8 +28,7 @@ from matplotlib.pyplot import title
 url_cert = 'https://www.cert.ssi.gouv.fr/alerte/feed/'
 url_cnn = 'http://rss.cnn.com/rss/edition.rss'
 #d = feedparser.parse(url_cert, handlers = [proxy])
-flux = feedparser.parse(url_cnn)
-url = flux.channel.link
+
 # print all posts
 
 def getDictOfFoundedProps(post):
@@ -55,12 +57,9 @@ def dataToAscii(post, dictOfTruth ):
     if link != "":
         try:
             with urllib.request.urlopen(link) as f:
-                data = f.read().decode('utf-8')
-                newFile = open('myFile.txt', "a")
-                newFile.write(data)
-                return textract.process("./myFile.txt")
+                return  f.read().decode('utf-8').encode("ascii","ignore")
         except:
-            return
+            return ''
 
 def isInEntry(post, name ):
     try:
@@ -75,7 +74,49 @@ def getEntry(dictOfTruth, post, name):
     else:
         return ""
 
-for post in flux.entries:
-    dictOfTruth = getDictOfFoundedProps(post)
-    #print(dataToAscii(post, dictOfTruth))
+def generateDict(dictOfTruth, post, id):
+    return {  "id": id,
+            "title": getEntry(dictOfTruth,post,'title'),
+            "description": getEntry(dictOfTruth,post,'description'),
+            "pubDate": getEntry(dictOfTruth,post,'pubDate'),
+            "link": getEntry(dictOfTruth,post,'link'),
+            "language": getLanguage(post, dictOfTruth),
+            "data": dataToAscii(post, dictOfTruth) }
+
+
+def parsingData(rss_link, repertory):
+    """
+    ARGS:
+        rss_link -> link of rss stream
+        repertory -> output repertory
+    OUTPUT:
+
+    """
+    flux = feedparser.parse(rss_link)
+    parsedData = []
+    n = len(flux.entries)
+    if  n == 0 :
+        print("error: Not a rss url / No entries in the rss")
+    else:
+        url = flux.channel.link
+        index = 0
+        for post in flux.entries:
+            index += 1
+            dictOfTruth = getDictOfFoundedProps(post)
+            id = getID(generateID(post, dictOfTruth))
+            dictTest = generateDict(dictOfTruth, post, id)
+            parsedData.append(dictTest)
+            print(f"{index/n}% effectué", end='\r')
+            if index == 5:
+                with open('mypicklefile', 'wb') as f1:
+                    pickle.dump(parsedData, f1)
+                break
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3: 
+        print("usage: python .\helloFeddParser-1.py [rssLink] [path to store pickle file]")
+    else:
+        parsingData(sys.argv[1], sys.argv[2])
+
     
