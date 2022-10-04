@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 import pickle
 import urllib.request, feedparser
 from langdetect import detect
-import textract
+#import textract
 import hashlib
 import numpy as np
 
@@ -107,7 +107,7 @@ def parsingData(rss_link, repertory):
             dictTest = generateDict(dictOfTruth, post, id)
             parsedData.append(dictTest)
             print(f"{index/n}% effectué", end='\r')
-            if index == 5:
+            if index == 20:
                 with open('mypicklefile', 'wb') as f1:
                     pickle.dump(parsedData, f1)
                 break
