@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 import pickle
 import urllib.request, feedparser
 from langdetect import detect
-import textract
+#import textract
 import hashlib
 import numpy as np
 
