@@ -107,7 +107,7 @@ def parsingData(rss_link, repertory):
             dictTest = generateDict(dictOfTruth, post, id)
             parsedData.append(dictTest)
             print(f"{index/n}% effectué", end='\r')
-            if index == 5:
+            if index == 1000:
                 with open('mypicklefile', 'wb') as f1:
                     pickle.dump(parsedData, f1)
                 break
