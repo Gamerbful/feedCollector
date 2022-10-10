@@ -8,4 +8,4 @@ with (open("mypicklefile", "rb")) as openfile:
             break
 
 
-print(res)
+print(len(res))
