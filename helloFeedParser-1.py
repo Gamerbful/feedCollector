@@ -6,11 +6,11 @@ import sys
 from this import d
 from bs4 import BeautifulSoup
 import pickle
-import urllib.request, feedparser
+import feedparser
 from langdetect import detect
 #import textract
 import hashlib
-import numpy as np
+import requests
 
 #proxy = urllib.request.ProxyHandler({'http' : 'http://squidva.univ-ubs.fr:3128/'} )
 
@@ -18,8 +18,6 @@ import time
 from subprocess import check_output
 
 from matplotlib.pyplot import title
-
-
 
 # --------------------
 # CNN Collector (feedparser)
@@ -56,8 +54,9 @@ def dataToAscii(post, dictOfTruth ):
     link = getEntry(dictOfTruth,post,'link')
     if link != "":
         try:
-            with urllib.request.urlopen(link) as f:
-                return  f.read().decode('utf-8').encode("ascii","ignore")
+            page = requests.get(link)
+            soup = BeautifulSoup(page.content, "html.parser")
+            return soup.prettify()
         except:
             return ''
 
@@ -83,7 +82,7 @@ def generateDict(dictOfTruth, post, id):
             "language": getLanguage(post, dictOfTruth),
             "data": dataToAscii(post, dictOfTruth) }
 
-
+import json
 def parsingData(rss_link, repertory):
     """
     ARGS:
@@ -106,8 +105,8 @@ def parsingData(rss_link, repertory):
             id = getID(generateID(post, dictOfTruth))
             dictTest = generateDict(dictOfTruth, post, id)
             parsedData.append(dictTest)
-        with open('mypicklefile', 'wb') as f1:
-            pickle.dump(parsedData, f1)
+        with open("mydata.json", "w") as final:
+            json.dump(parsedData, final, indent=4)
 
 
 if __name__ == "__main__":

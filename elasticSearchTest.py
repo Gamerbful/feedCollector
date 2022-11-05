@@ -54,11 +54,12 @@ def searchBdy(bdy, index_name):
 if __name__=='__main__':
         
     # reading
-    rss = pd.read_pickle('mypicklefile')
+    import readJSON as rj
+    rss = rj.getRss()
     # testing
     getESVersion(es)
     testServer()
-
+    print(rss[0][1][1])
     #indexing
     #for i in range(len(rss)):
     #    indexData(rss[i]['id'], rss[i])
