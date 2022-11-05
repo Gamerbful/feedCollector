@@ -46,3 +46,5 @@ if __name__=='__main__':
         if arg == "SEARCH":
             res = getDocuments("rss",{"match_all": {} } )
             print ("query hits:", len(res["hits"]["hits"]))
+        if arg == "CLEAR":
+            clearServer()
