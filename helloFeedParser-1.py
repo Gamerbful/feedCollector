@@ -1,23 +1,13 @@
 #!/usr/bin/python3
-
-
-#
 import sys
 from this import d
 from bs4 import BeautifulSoup
-import pickle
 import feedparser
 from langdetect import detect
-#import textract
 import hashlib
 import requests
-
-#proxy = urllib.request.ProxyHandler({'http' : 'http://squidva.univ-ubs.fr:3128/'} )
-
-import time
-from subprocess import check_output
-
-from matplotlib.pyplot import title
+import snowballstemmer
+from stop_words import get_stop_words 
 
 # --------------------
 # CNN Collector (feedparser)
@@ -50,13 +40,38 @@ def getLanguage(post,dictOfTruth):
     if txt != "":
         return detect(txt)
 
+
+# Function to remove tags
+def remove_tags(html):
+  
+    # parse html content
+    soup = BeautifulSoup(html, "html.parser")
+  
+    for data in soup(['style', 'script']):
+        # Remove tags
+        data.decompose()
+  
+    # return data by retrieving the tag content
+    return ' '.join(soup.stripped_strings)
+
+    
 def dataToAscii(post, dictOfTruth ):
     link = getEntry(dictOfTruth,post,'link')
     if link != "":
         try:
             page = requests.get(link)
-            soup = BeautifulSoup(page.content, "html.parser")
-            return soup.prettify()
+            textTokens = remove_tags(page.content).split()
+            if len(textTokens) < 100:
+                return ""
+            language = getLanguage(post, dictOfTruth)
+            stop_words = get_stop_words(language)
+            filtered_sentence = [w for w in textTokens if not w.lower() in stop_words]
+            if language == "en":
+                stemmer = snowballstemmer.stemmer("english")
+            else:
+                stemmer = snowballstemmer.stemmer("french")
+            stemFilteredText = stemmer.stemWords(filtered_sentence)
+            return [w.lower() for w in stemFilteredText]
         except:
             return ''
 
@@ -95,6 +110,7 @@ def parsingData():
 
     linesLength = len(open("FluxRSSCategories.txt").readlines())
     count = 0
+    fileName = "dataChunk_"
     for line in open("FluxRSSCategories.txt","r"):
         
         row = line.split()
@@ -118,9 +134,11 @@ def parsingData():
                     dictOfTruth = getDictOfFoundedProps(post)
                     id = getID(generateID(post, dictOfTruth))
                     dictTest = generateDict(dictOfTruth, post, id, cat)
-                    parsedData.append(dictTest)
-                with open("mydata.json", "w") as final:
-                    json.dump(parsedData, final, indent=4)
+                    if dictTest['data'] != "":
+                        parsedData.append(dictTest)
+                if len(parsedData) != 0:
+                    with open("rss/{}{}.json".format(fileName,count), "w") as final:
+                        json.dump(parsedData, final, indent=4)
 
 
 if __name__ == "__main__":

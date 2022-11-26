@@ -1,5 +1,5 @@
 from elasticsearch import Elasticsearch 
-import readJSON as rp
+import utils.readJSON as rp
 import datetime
 from elasticsearch import helpers
 import sys
@@ -8,23 +8,24 @@ es_client = Elasticsearch("http://localhost:9200")
 def generate_docs():
     reader = rp.getRss()
 
-    for data in reader:
-        doc = {
-            "_index": "rss",
-            "_id": data["id"],
-            "_source": {
-                "id": data["id"],
-                "title": data["title"],
-                "description": data["description"],
-                "pubDate": data["pubDate"],
-                "link": data["link"],
-                "language": data["language"],
-                "Catégorie_du_flux": None,
-                "Catégorie_prédite": None,
-                "date_de_collecte": datetime.datetime.now(),
-                "data": data["data"] }
-            }
-        yield doc
+    for chunk in reader:
+        for data in chunk:
+            doc = {
+                "_index": "rss",
+                "_id": data["id"],
+                "_source": {
+                    "id": data["id"],
+                    "title": data["title"],
+                    "description": data["description"],
+                    "pubDate": data["pubDate"],
+                    "link": data["link"],
+                    "language": data["language"],
+                    "Catégorie_du_flux": data["categorie"],
+                    "Catégorie_prédite": None,
+                    "date_de_collecte": datetime.datetime.now(),
+                    "data": data["data"] }
+                }
+            yield doc
 
 def clearServer():
     es_client.delete_by_query(index="rss", query={"match_all": {}})
