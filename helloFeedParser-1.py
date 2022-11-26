@@ -71,7 +71,7 @@ def dataToAscii(post, dictOfTruth ):
             else:
                 stemmer = snowballstemmer.stemmer("french")
             stemFilteredText = stemmer.stemWords(filtered_sentence)
-            return [w.lower() for w in stemFilteredText]
+            return " ".join([w.lower() for w in stemFilteredText])
         except:
             return ''
 
