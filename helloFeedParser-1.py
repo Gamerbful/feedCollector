@@ -6,8 +6,12 @@ import feedparser
 from langdetect import detect
 import hashlib
 import requests
+from urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 import snowballstemmer
 from stop_words import get_stop_words 
+import elasticSearchTest as est
+client = est.es_client
 
 # --------------------
 # CNN Collector (feedparser)
@@ -59,7 +63,7 @@ def dataToAscii(post, dictOfTruth ):
     link = getEntry(dictOfTruth,post,'link')
     if link != "":
         try:
-            page = requests.get(link)
+            page = requests.get(link,timeout=2, verify=False)
             textTokens = remove_tags(page.content).split()
             if len(textTokens) < 100:
                 return ""
@@ -72,7 +76,8 @@ def dataToAscii(post, dictOfTruth ):
                 stemmer = snowballstemmer.stemmer("french")
             stemFilteredText = stemmer.stemWords(filtered_sentence)
             return " ".join([w.lower() for w in stemFilteredText])
-        except:
+        except Exception as e:
+            print(e)
             return ''
 
 def isInEntry(post, name ):
@@ -129,13 +134,14 @@ def parsingData():
                 index = 0
                 for post in flux.entries:
                     count2 += 1
-                    print("flux numero {} / {}".format(count2,n))
+                    print("flux numero {} / {}".format(count2,n), end="\r")
                     index += 1
                     dictOfTruth = getDictOfFoundedProps(post)
                     id = getID(generateID(post, dictOfTruth))
-                    dictTest = generateDict(dictOfTruth, post, id, cat)
-                    if dictTest['data'] != "":
-                        parsedData.append(dictTest)
+                    if not client.exists(index="rss", id=id):
+                        dictTest = generateDict(dictOfTruth, post, id, cat)
+                        if dictTest['data'] != "":
+                            parsedData.append(dictTest)
                 if len(parsedData) != 0:
                     with open("rss/{}{}.json".format(fileName,count), "w") as final:
                         json.dump(parsedData, final, indent=4)
