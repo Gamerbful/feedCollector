@@ -73,17 +73,18 @@ def getEntry(dictOfTruth, post, name):
     else:
         return ""
 
-def generateDict(dictOfTruth, post, id):
+def generateDict(dictOfTruth, post, id, cat):
     return {  "id": id,
             "title": getEntry(dictOfTruth,post,'title'),
             "description": getEntry(dictOfTruth,post,'description'),
             "pubDate": getEntry(dictOfTruth,post,'pubDate'),
             "link": getEntry(dictOfTruth,post,'link'),
             "language": getLanguage(post, dictOfTruth),
+            "categorie":cat,
             "data": dataToAscii(post, dictOfTruth) }
 
 import json
-def parsingData(rss_link, repertory):
+def parsingData():
     """
     ARGS:
         rss_link -> link of rss stream
@@ -91,28 +92,41 @@ def parsingData(rss_link, repertory):
     OUTPUT:
 
     """
-    flux = feedparser.parse(rss_link)
-    parsedData = []
-    n = len(flux.entries)
-    if  n == 0 :
-        print("error: Not a rss url / No entries in the rss")
-    else:
-        url = flux.channel.link
-        index = 0
-        for post in flux.entries:
-            index += 1
-            dictOfTruth = getDictOfFoundedProps(post)
-            id = getID(generateID(post, dictOfTruth))
-            dictTest = generateDict(dictOfTruth, post, id)
-            parsedData.append(dictTest)
-        with open("mydata.json", "w") as final:
-            json.dump(parsedData, final, indent=4)
+
+    linesLength = len(open("FluxRSSCategories.txt").readlines())
+    count = 0
+    for line in open("FluxRSSCategories.txt","r"):
+        
+        row = line.split()
+        if(len(row) == 3):
+            print("Flux rss numero : {} / {}".format(count,linesLength))
+            count += 1
+            rss_link = row[1]
+            cat = row[0]
+            flux = feedparser.parse(rss_link)
+            parsedData = []
+            n = len(flux.entries)
+            count2 = 0
+            if  n == 0 :
+                print("error: Not a rss url / No entries in the rss")
+            else:
+                index = 0
+                for post in flux.entries:
+                    count2 += 1
+                    print("flux numero {} / {}".format(count2,n))
+                    index += 1
+                    dictOfTruth = getDictOfFoundedProps(post)
+                    id = getID(generateID(post, dictOfTruth))
+                    dictTest = generateDict(dictOfTruth, post, id, cat)
+                    parsedData.append(dictTest)
+                with open("mydata.json", "w") as final:
+                    json.dump(parsedData, final, indent=4)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3: 
+    if len(sys.argv) != 1: 
         print("usage: python .\helloFeddParser-1.py [rssLink] [path to store pickle file]")
     else:
-        parsingData(sys.argv[1], sys.argv[2])
+        parsingData()
 
     

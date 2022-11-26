@@ -1,0 +1,26 @@
+BUSINESS http://rss.nytimes.com/services/xml/rss/nyt/Business.xml EN
+BUSINESS http://feeds.bbci.co.uk/news/business/rss.xml EN
+BUSINESS http://rss.cnn.com/rss/edition_business.rss EN
+BUSINESS http://www.france24.com/fr/economie/rss FR
+
+SPORT http://rss.lemonde.fr/c/205/f/3058/index.rss FR
+SPORT http://rss.nytimes.com/services/xml/rss/nyt/Sports.xml EN
+SPORT http://www.lequipe.fr/rss/actu_rss.xml FR
+SPORT http://feeds.bbci.co.uk/sport/rss.xml?edition=int EN
+
+HEALTH https://medlineplus.gov/feeds/news_en.xml EN
+HEALTH http://feeds.bbci.co.uk/news/health/rss.xml EN
+HEALTH http://www.lemonde.fr/sante/rss_full.xml FR
+HEALTH https://www.santepubliquefrance.fr/content/view/rss/426 FR
+
+ART http://rss.cnn.com/rss/edition_entertainment.rss EN
+ART http://rss.nytimes.com/services/xml/rss/nyt/Arts.xml EN
+ART http://www.france24.com/fr/culture/rss/ FR
+ART http://www.lemonde.fr/culture/rss_full.xml FR
+
+SCIENCE http://rss.nytimes.com/services/xml/rss/nyt/Science.xml EN
+SCIENCE http://feeds.bbci.co.uk/news/science_and_environment/rss.xml EN
+SCIENCE http://rss.cnn.com/rss/edition_space.rss EN
+SCIENCE http://www.lemonde.fr/sciences/rss_full.xml FR
+SCIENCE http://www.france24.com/fr/actualites/rss/ FR
+SCIENCE https://www.sciencesetavenir.fr/rss.xml FR
