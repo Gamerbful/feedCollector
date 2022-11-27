@@ -1,4 +1,3 @@
-import json
 import elasticSearchTest as est
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
