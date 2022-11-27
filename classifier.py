@@ -142,7 +142,7 @@ def test(models, X_test, y_test):
     return bestModel
 
 from sklearn.metrics import roc_auc_score
-
+from sklearn.metrics import confusion_matrix
 
 def printMetrics(model, X_test, y_test, language):
     modelName = type(model).__name__
@@ -154,6 +154,8 @@ def printMetrics(model, X_test, y_test, language):
     print("{} {} accuracy : {}".format(modelName, language, acc))
     print("{} {} f1 score : {}".format(modelName, language, f1))
     print("{} {} roc_auc score : {}".format(modelName, language, roc))
+    return confusion_matrix(y_test,yPredict)
+
 
 import time
 def execTimeForOneDoc(model,doc):
@@ -182,10 +184,20 @@ else:
 
 
 
-printMetrics(bestModelEN, X_test_EN, y_test_EN, "EN")
+cm1 = printMetrics(bestModelEN, X_test_EN, y_test_EN, "EN")
 execTimeForOneDoc(bestModelEN, [X_test_EN[0]])
-printMetrics(bestModelFR, X_test_FR, y_test_FR, "FR")
+cm2 = printMetrics(bestModelFR, X_test_FR, y_test_FR, "FR")
 execTimeForOneDoc(bestModelFR, [X_test_FR[0]])
 
 
 
+import seaborn as sns
+from matplotlib import pyplot as plt
+
+plt.figure()
+cm1_plot = sns.heatmap(cm1/np.sum(cm1), annot=True, xticklabels=categories, yticklabels=categories)
+plt.figure()
+cm2_plot = sns.heatmap(cm2/np.sum(cm2), annot=True, xticklabels=categories, yticklabels=categories)
+
+cm1_plot.figure.savefig("img/cmEN.png",dpi=400)
+cm2_plot.figure.savefig("img/cmFR.png",dpi=400)
