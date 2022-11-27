@@ -39,5 +39,5 @@ def getBestSimilarities(model, word, language,topn=10):
 	stemWord = stemmer.stemWord(word)
 	return model.wv.most_similar(positive=stemWord, topn=topn)
 
-print(getBestSimilarities(modelFR, "ukraine", "french"))
+print(getBestSimilarities(modelFR, "module", "french"))
 print(getBestSimilarities(modelEN, "healthcare", "english"))
