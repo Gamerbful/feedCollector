@@ -104,6 +104,11 @@ def generateDict(dictOfTruth, post, id, cat):
             "data": dataToAscii(post, dictOfTruth) }
 
 import json
+
+import os
+import glob
+
+
 def parsingData():
     """
     ARGS:
@@ -112,6 +117,10 @@ def parsingData():
     OUTPUT:
 
     """
+    files = glob.glob('rss/*') # erase previous chunks
+    for f in files:
+        os.remove(f)
+
 
     linesLength = len(open("FluxRSSCategories.txt").readlines())
     count = 0
