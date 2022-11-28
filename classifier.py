@@ -244,6 +244,7 @@ cm2_plot = sns.heatmap(cm2/np.sum(cm2), annot=True, xticklabels=categories, ytic
 cm1_plot.figure.savefig("img/cmEN.png",dpi=400)
 cm2_plot.figure.savefig("img/cmFR.png",dpi=400)
 
-vectorizerFR = pickle.load( open("vec/vectorizerFR.pickle", "rb"))
+print(X_test_FR[0].shape)
 
-# print(vectorizerFR.transform([corpusFR[0]]))
+
+
