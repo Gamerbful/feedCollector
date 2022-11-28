@@ -6,6 +6,8 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
 import numpy as np
 import os.path
+import pickle
+
 
 categories = ["BUSINESS","SPORT","HEALTH","ART","SCIENCE"]
 
@@ -32,7 +34,7 @@ for hit in hits:
         if hit["_source"]["language"] == "fr":      
             corpusFR.append(hit["_source"]["data"])
             yFR.append(categories.index(hit["_source"]["Catégorie_du_flux"]))
-        else:
+        elif hit["_source"]["language"] == "en":
             corpusEN.append(hit["_source"]["data"])
             yEN.append(categories.index(hit["_source"]["Catégorie_du_flux"]))
 
@@ -40,51 +42,45 @@ for hit in hits:
 print("EN doc count : {}".format(len(corpusEN)))
 print("FR doc count : {}".format(len(corpusFR)))
 
-def vectorize(corpus):
-    vectorizer2 = TfidfVectorizer(analyzer='word', ngram_range=(1, 3))
+def vectorize(corpus,language):
+    vectorizer2 = CountVectorizer(analyzer='word', ngram_range=(1, 1))
     X2 = vectorizer2.fit_transform(corpus)  
+    pickle.dump(vectorizer2,open("vec/vectorizer{}.pickle".format(language),"wb"))
     print(X2.toarray().shape)
     return X2.toarray(),vectorizer2.get_feature_names_out()
 
 def splitSet(vec,y):
-    return train_test_split(  vec, y, test_size=0.33, random_state=42)
+    return train_test_split(  vec, y, test_size=0.2, random_state=2)
 
-if os.path.isfile("dataset/xtestEN.npy"):
-    print("loading dataset EN...")
-    X_train_EN = np.load("dataset/xtrainEN.npy")
-    X_test_EN = np.load("dataset/xtestEN.npy")
-    y_train_EN = np.load("dataset/ytrainEN.npy")
-    y_test_EN = np.load("dataset/ytestEN.npy")
-    print("dataset EN loaded!")
+if os.path.isfile("vec/vecEN.pickle"):
+    print("loading vectorizer EN...")
+    vecEN = pickle.load(open("vec/vecEN.pickle", "rb"))
+    print("vectorizer FR loaded!")
+    X_train_EN, X_test_EN, y_train_EN, y_test_EN = splitSet(vecEN,yEN)
+    print("dataset EN created!")
 else:
-    vecEN,vecFeaturesEN = vectorize(corpusEN)
+    vecEN,vecFeaturesEN = vectorize(corpusEN,"EN")
     np.save("vec/vecFeaturesEN.npy",vecFeaturesEN)
     X_train_EN, X_test_EN, y_train_EN, y_test_EN = splitSet(vecEN,yEN)
     print("Dataset EN created!")
-    np.save("dataset/xtrainEN.npy",X_train_EN)
-    np.save("dataset/xtestEN.npy",X_test_EN)
-    np.save("dataset/ytrainEN.npy",y_train_EN)
-    np.save("dataset/ytestEN.npy",y_test_EN)
-    print("dataset EN saved!")
+    print("saving EN vectorizer...")
+    pickle.dump(vecEN, open("vec/vecEN.pickle", "wb"))
+    print("EN vectorizer saved!")
 
-if os.path.isfile("dataset/xtestFR.npy"):
-    print("loading dataset FR...")
-    X_train_FR = np.load("dataset/xtrainFR.npy")
-    X_test_FR = np.load("dataset/xtestFR.npy")
-    y_train_FR = np.load("dataset/ytrainFR.npy")
-    y_test_FR = np.load("dataset/ytestFR.npy")
-    print("dataset FR loaded!")
+if os.path.isfile("vec/vecFR.pickle"):
+    print("loading vectorizer FR...")
+    vecFR = pickle.load(open("vec/vecFR.pickle", "rb"))
+    print("vectorizer FR loaded!")
+    X_train_FR, X_test_FR, y_train_FR, y_test_FR = splitSet(vecFR,yFR)
+    print("dataset FR created!")
 else:
-    vecFR,vecFeaturesFR = vectorize(corpusFR)
+    vecFR,vecFeaturesFR = vectorize(corpusFR,"FR")
     np.save("vec/vecFeaturesFR.npy",vecFeaturesFR)
     X_train_FR, X_test_FR, y_train_FR, y_test_FR = splitSet(vecFR,yFR)
     print("Dataset FR created!")
-    print("Saving dataset...")
-    np.save("dataset/xtrainFR.npy",X_train_FR)
-    np.save("dataset/xtestFR.npy",X_test_FR)
-    np.save("dataset/ytrainFR.npy",y_train_FR)
-    np.save("dataset/ytestFR.npy",y_test_FR)
-    print("dataset FR saved!")
+    print("saving FR vectorizer...")
+    pickle.dump(vecFR, open("vec/vecFR.pickle", "wb"))
+    print("FR vectorizer saved!")
 
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LogisticRegression
@@ -94,26 +90,73 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neural_network import MLPClassifier
+from sklearn.model_selection import RandomizedSearchCV
+from scipy.stats import uniform
+
+
+# gnb {'var_smoothing': 1.2328467394420658e-05}
+# knn {'n_neighbors': 1}
+# lr {'C': 2.195254015709299, 'penalty': 'l1'}
+#mlp {'solver': 'adam', 'learning_rate': 'constant', 'hidden_layer_sizes': (16,), 'alpha': 0.05, 'activation': 'tanh'}
 
 neighFR = KNeighborsClassifier(n_neighbors=3)
-lrFR = LogisticRegression(random_state=0)
-gnbFR = GaussianNB()
+lrFR = LogisticRegression(solver='saga', penalty="l2", C=2.195254015709299, tol=1e-2, max_iter=300,random_state=0)
+gnbFR = GaussianNB(var_smoothing=1.2328467394420658e-05)
 # svcFR = make_pipeline(StandardScaler(), SVC(gamma='auto'))
 # rcFR = RandomForestClassifier(max_depth=2, random_state=0)
-mlpFR = MLPClassifier(random_state=1,alpha=0.0005, max_iter=200, early_stopping=True,batch_size=256)
+mlpFR = MLPClassifier(random_state=1,alpha=0.0001,activation="relu", early_stopping=False, max_iter=100,tol=0.00001, verbose=1, hidden_layer_sizes=(128,))
 
 neighEN = KNeighborsClassifier(n_neighbors=3)
-lrEN = LogisticRegression(random_state=0)
-gnbEN = GaussianNB()
+lrEN = LogisticRegression(solver='saga', penalty="l2", C=2.195254015709299, tol=1e-2, max_iter=200,random_state=0)
+gnbEN = GaussianNB(var_smoothing=1.2328467394420658e-05)
 # svcEN = make_pipeline(StandardScaler(), SVC(gamma='auto'))
 # rcEN = RandomForestClassifier(max_depth=2, random_state=0)
-mlpEN = MLPClassifier(random_state=1,alpha=0.0005, max_iter=200, early_stopping=True,batch_size=256)
+mlpEN = MLPClassifier(random_state=1,alpha=0.0001,activation="relu", early_stopping=False, max_iter=100,tol=0.00001, verbose=1, hidden_layer_sizes=(128,))
+
+
+
 
 def predict(model,x):
     return model.predict(x)
 
+logisticDist = dict(
+    C=uniform(loc=0, scale=4),
+    penalty=['l2','l1']
+)
+
+mlpDist = dict(
+    hidden_layer_sizes=[(128,),(64,32,16,),(32,16,),(16,)],
+    activation= ["tanh","relu"],
+    solver= ["sgd","adam"],
+    alpha = [0.0001,0.05],
+    learning_rate = ["constant", 'adaptive']
+)
+
+knnDist = dict(
+    n_neighbors = [1,3,5,7,9,12,15,18,21]
+)
+
+gnbDist = dict(
+    var_smoothing= np.logspace(0,-9, num=100)
+)
+
 modelsFR = [neighFR,lrFR,gnbFR,mlpFR]
 modelsEN = [neighEN,lrEN,gnbEN,mlpEN]
+
+modelsDist = [knnDist, logisticDist, gnbDist, mlpDist]
+
+
+def bestParams(clf,dist,x,y):
+    rs = RandomizedSearchCV(clf, dist, random_state=0, verbose=3)
+    rs.fit(x,y)
+    return rs.best_params_
+
+def PrintBestParams(models,dists,x,y):
+    for i in range(len(models)):
+        print(bestParams(models[i],dists[i],x,y))
+
+# print(bestParams(neighFR,knnDist,X_train_EN, y_train_EN))
+# print(bestParams(mlpFR,mlpDist,X_train_EN, y_train_EN))
 
 from joblib import dump, load
 
@@ -200,3 +243,7 @@ cm2_plot = sns.heatmap(cm2/np.sum(cm2), annot=True, xticklabels=categories, ytic
 
 cm1_plot.figure.savefig("img/cmEN.png",dpi=400)
 cm2_plot.figure.savefig("img/cmFR.png",dpi=400)
+
+vectorizerFR = pickle.load( open("vec/vectorizerFR.pickle", "rb"))
+
+# print(vectorizerFR.transform([corpusFR[0]]))
