@@ -1,0 +1,38 @@
+
+ input {
+    border-radius: 7px 7px;
+    border: 1px solid black;
+    outline: none;
+    padding: 20px;
+    width: 70%;
+    height: 30%;
+    font-family: 'open-sans';
+}
+
+form {
+    width:50%;
+    height: 100%;
+    border: 1px solid black;
+    display: inline;
+}
+
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: 'open-sans';
+}
+
+body {
+    display: flex;
+    align-items: center;
+    width: 100vw;
+}
+
+header {
+    width:100%;
+    height:100px;
+    background-color: rgb(106, 173, 231);
+    display: inline-flex;
+    align-items: center;
+}

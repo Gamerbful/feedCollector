@@ -5,6 +5,10 @@ from gensim.models import Phrases
 import snowballstemmer
 import pickle
 import numpy as np
+
+
+
+
 res = est.getDocuments("rss",{"match_all": {} })
 
 corpusFR = []
@@ -66,8 +70,8 @@ def getWords(sims):
 		words.append(t[0])
 	return words
 
-while True:
-	user_input = input('recherche: ').split()
+def search(query):
+	user_input = query.split()
 	user_input_lower = [ w.lower() for w in user_input ]
 	simsTuple = getBestSimilarities(modelFR, user_input_lower,"french",topn = 70)
 	print(getBestSimilarities(modelFR, user_input_lower,"french",topn = 30))
@@ -77,5 +81,6 @@ while True:
 	cat = bestModelFR.predict(X)
 	print(bestModelFR.predict_proba(X))
 	print(categories[cat[0]])
+	return categories[cat[0]]
 
 
