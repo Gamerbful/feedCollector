@@ -33,6 +33,12 @@ def clearServer():
 def getDocuments(index, query):
     return es_client.search(index=index, query=query, size=10000)
 
+def updateDocument(index, query, id):
+    es_client.update(
+        index=index,
+        id=id,
+        body=query
+    )
 
 if __name__=='__main__':
     if len(sys.argv) != 2:

@@ -1,7 +1,7 @@
 import elasticSearchTest as est
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split,StratifiedShuffleSplit
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
 import numpy as np
@@ -9,7 +9,7 @@ import os.path
 import pickle
 
 
-categories = ["BUSINESS","SPORT","HEALTH","ART","SCIENCE"]
+categories = ["BUSINESS","SPORT","HEALTH","ART","SCIENCE","POLITIC"]
 
 res = est.getDocuments("rss",{"match_all": {} })
 corpusFR = []
@@ -21,13 +21,28 @@ yEN = []
 hits = res["hits"]["hits"]
 size = len(hits)
 
-for cat in categories:
-    res = est.getDocuments("rss",{"match": {
-        "Catégorie_du_flux":cat
-    } })
-    print("{} : {}".format(cat,len(res["hits"]["hits"])))
 
+def numberByCat(language):
+    minCat = 1000000
+    for cat in categories:
+        res = est.getDocuments("rss",{ "bool": {
+      "must": [
+        {
+        "match": {
+            "Catégorie_du_flux":cat,
+        }},
+        {
+        "match": {
+            "language":language
+        }}
+        ] } })
+        print("{} : {}".format("{} {}".format(cat,language),len(res["hits"]["hits"])))
+        if len(res["hits"]["hits"]) < minCat:
+            minCat = len(res["hits"]["hits"])
+        return minCat
 
+minFR = numberByCat("fr")
+minEN = numberByCat("en")
     
 for hit in hits:
     if hit["_source"]["data"] != None:
@@ -43,19 +58,22 @@ print("EN doc count : {}".format(len(corpusEN)))
 print("FR doc count : {}".format(len(corpusFR)))
 
 def vectorize(corpus,language):
-    vectorizer2 = CountVectorizer(analyzer='word', ngram_range=(1, 1))
+    vectorizer2 = CountVectorizer(analyzer='word', max_df=0.9, min_df=0.02, ngram_range=(1, 2))
     X2 = vectorizer2.fit_transform(corpus)  
     pickle.dump(vectorizer2,open("vec/vectorizer{}.pickle".format(language),"wb"))
     print(X2.toarray().shape)
     return X2.toarray(),vectorizer2.get_feature_names_out()
 
 def splitSet(vec,y):
-    return train_test_split(  vec, y, test_size=0.2, random_state=2)
+    return train_test_split(  vec, y, test_size=0.2, random_state=2, stratify=y)
 
 if os.path.isfile("vec/vecEN.pickle"):
     print("loading vectorizer EN...")
     vecEN = pickle.load(open("vec/vecEN.pickle", "rb"))
-    print("vectorizer FR loaded!")
+    yEN = pickle.load(open("vec/yEN.pickle", "rb"))
+    print(len(vecEN))
+    print(len(yEN))
+    print("vectorizer EN loaded!")
     X_train_EN, X_test_EN, y_train_EN, y_test_EN = splitSet(vecEN,yEN)
     print("dataset EN created!")
 else:
@@ -65,11 +83,13 @@ else:
     print("Dataset EN created!")
     print("saving EN vectorizer...")
     pickle.dump(vecEN, open("vec/vecEN.pickle", "wb"))
+    pickle.dump(yEN, open("vec/yEN.pickle", "wb"))
     print("EN vectorizer saved!")
 
 if os.path.isfile("vec/vecFR.pickle"):
     print("loading vectorizer FR...")
     vecFR = pickle.load(open("vec/vecFR.pickle", "rb"))
+    yFR = pickle.load(open("vec/yFR.pickle", "rb"))
     print("vectorizer FR loaded!")
     X_train_FR, X_test_FR, y_train_FR, y_test_FR = splitSet(vecFR,yFR)
     print("dataset FR created!")
@@ -80,6 +100,7 @@ else:
     print("Dataset FR created!")
     print("saving FR vectorizer...")
     pickle.dump(vecFR, open("vec/vecFR.pickle", "wb"))
+    pickle.dump(yFR, open("vec/yFR.pickle", "wb"))
     print("FR vectorizer saved!")
 
 from sklearn.neighbors import KNeighborsClassifier
@@ -104,14 +125,14 @@ lrFR = LogisticRegression(solver='saga', penalty="l2", C=2.195254015709299, tol=
 gnbFR = GaussianNB(var_smoothing=1.2328467394420658e-05)
 # svcFR = make_pipeline(StandardScaler(), SVC(gamma='auto'))
 # rcFR = RandomForestClassifier(max_depth=2, random_state=0)
-mlpFR = MLPClassifier(random_state=1,alpha=0.0001,activation="relu", early_stopping=False, max_iter=100,tol=0.00001, verbose=1, hidden_layer_sizes=(128,))
+mlpFR = MLPClassifier(random_state=1,alpha=0.0001,activation="tanh", early_stopping=False, max_iter=100,tol=0.00001, verbose=1, hidden_layer_sizes=(128,))
 
 neighEN = KNeighborsClassifier(n_neighbors=3)
 lrEN = LogisticRegression(solver='saga', penalty="l2", C=2.195254015709299, tol=1e-2, max_iter=200,random_state=0)
 gnbEN = GaussianNB(var_smoothing=1.2328467394420658e-05)
 # svcEN = make_pipeline(StandardScaler(), SVC(gamma='auto'))
 # rcEN = RandomForestClassifier(max_depth=2, random_state=0)
-mlpEN = MLPClassifier(random_state=1,alpha=0.0001,activation="relu", early_stopping=False, max_iter=100,tol=0.00001, verbose=1, hidden_layer_sizes=(128,))
+mlpEN = MLPClassifier(random_state=1,alpha=0.0001,activation="tanh", early_stopping=False, max_iter=100,tol=0.00001, verbose=1, hidden_layer_sizes=(128,))
 
 
 
@@ -119,41 +140,41 @@ mlpEN = MLPClassifier(random_state=1,alpha=0.0001,activation="relu", early_stopp
 def predict(model,x):
     return model.predict(x)
 
-logisticDist = dict(
-    C=uniform(loc=0, scale=4),
-    penalty=['l2','l1']
-)
+# logisticDist = dict(
+#     C=uniform(loc=0, scale=4),
+#     penalty=['l2','l1']
+# )
 
-mlpDist = dict(
-    hidden_layer_sizes=[(128,),(64,32,16,),(32,16,),(16,)],
-    activation= ["tanh","relu"],
-    solver= ["sgd","adam"],
-    alpha = [0.0001,0.05],
-    learning_rate = ["constant", 'adaptive']
-)
+# mlpDist = dict(
+#     hidden_layer_sizes=[(128,),(64,32,16,),(32,16,),(16,)],
+#     activation= ["tanh","relu"],
+#     solver= ["sgd","adam"],
+#     alpha = [0.0001,0.05],
+#     learning_rate = ["constant", 'adaptive']
+# )
 
-knnDist = dict(
-    n_neighbors = [1,3,5,7,9,12,15,18,21]
-)
+# knnDist = dict(
+#     n_neighbors = [1,3,5,7,9,12,15,18,21]
+# )
 
-gnbDist = dict(
-    var_smoothing= np.logspace(0,-9, num=100)
-)
+# gnbDist = dict(
+#     var_smoothing= np.logspace(0,-9, num=100)
+# )
 
 modelsFR = [neighFR,lrFR,gnbFR,mlpFR]
 modelsEN = [neighEN,lrEN,gnbEN,mlpEN]
 
-modelsDist = [knnDist, logisticDist, gnbDist, mlpDist]
+# modelsDist = [knnDist, logisticDist, gnbDist, mlpDist]
 
 
-def bestParams(clf,dist,x,y):
-    rs = RandomizedSearchCV(clf, dist, random_state=0, verbose=3)
-    rs.fit(x,y)
-    return rs.best_params_
+# def bestParams(clf,dist,x,y):
+#     rs = RandomizedSearchCV(clf, dist, random_state=0, verbose=3)
+#     rs.fit(x,y)
+#     return rs.best_params_
 
-def PrintBestParams(models,dists,x,y):
-    for i in range(len(models)):
-        print(bestParams(models[i],dists[i],x,y))
+# def PrintBestParams(models,dists,x,y):
+#     for i in range(len(models)):
+#         print(bestParams(models[i],dists[i],x,y))
 
 # print(bestParams(neighFR,knnDist,X_train_EN, y_train_EN))
 # print(bestParams(mlpFR,mlpDist,X_train_EN, y_train_EN))
@@ -246,5 +267,49 @@ cm2_plot.figure.savefig("img/cmFR.png",dpi=400)
 
 print(X_test_FR[0].shape)
 
+if os.path.isfile("vec/vectorizerEN.pickle"):
+    vectorizerFR = pickle.load( open("vec/vectorizerFR.pickle", "rb"))
+    vectorizerEN = pickle.load( open("vec/vectorizerEN.pickle", "rb"))
+    def predictAllDoc():
+        print("prediction of all docs unpredicted")
+        good = 0
+        total = 0
+        for hit in hits:
+            if hit["_source"]["data"] != None:
+                if hit["_source"]["language"] == "fr" and hit["_source"]["Catégorie_prédite"] == None:
+                    X = vectorizerFR.transform([hit["_source"]["data"]])
+                    cat = bestModelFR.predict(X)
+                    predict = categories[cat[0]]
+                    gt = hit["_source"]["Catégorie_du_flux"]
+                    if predict == gt:
+                        good+=1
+                    total+=1
+                    proba = np.max(bestModelFR.predict_proba(X), axis=1)
+                    source_to_update = {
+                        "doc" : {
+                            "Catégorie_prédite":"{} {}".format(predict,proba)
+                        }
+                        }
+
+                    est.updateDocument("rss",source_to_update,hit["_source"]["id"])
+                
+                elif hit["_source"]["language"] == "en" and hit["_source"]["Catégorie_prédite"] == None:
+                    X = vectorizerEN.transform([hit["_source"]["data"]])
+                    cat = bestModelEN.predict(X)
+                    predict = categories[cat[0]]
+                    gt = hit["_source"]["Catégorie_du_flux"]
+                    if predict == gt:
+                        good+=1
+                    total+=1
+                    proba = np.max(bestModelEN.predict_proba(X), axis=1)
+                    source_to_update = {
+                        "doc" : {
+                            "Catégorie_prédite":"{} {}".format(predict,proba)
+                        }
+                        }
+                    est.updateDocument("rss",source_to_update,hit["_source"]["id"])
+        print("prediction done!")
+        print("recap {} / {} good predictions".format(good,total))
+    predictAllDoc()
 
 

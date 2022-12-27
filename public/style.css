@@ -12,7 +12,6 @@
 form {
     width:50%;
     height: 100%;
-    border: 1px solid black;
     display: inline;
 }
 
@@ -25,6 +24,7 @@ form {
 
 body {
     display: flex;
+    flex-direction: column;
     align-items: center;
     width: 100vw;
 }
@@ -35,4 +35,39 @@ header {
     background-color: rgb(106, 173, 231);
     display: inline-flex;
     align-items: center;
+}
+
+main {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding-left: 50px;
+    padding-top: 15px;
+    background-color: rgb(26, 25, 25);
+}
+
+ul {
+    width: 100%;
+    list-style-type: none;
+}
+
+li {
+    width: 70%;
+    overflow: hidden;
+    border-radius: 7px 7px;
+    border: 1px solid;
+    padding: 20px;
+    margin-bottom: 15px;
+    background-color: white;
+}
+
+p {
+    margin-left:20px;
+    font-family: 'Helvetica';
+    font-weight: 500;
+    margin-top: 10px;
+}
+a {
+    font-size: 1.5em;
+    text-decoration: none;
 }

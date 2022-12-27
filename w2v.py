@@ -51,7 +51,7 @@ from joblib import dump, load
 vectorizerFR = pickle.load( open("vec/vectorizerFR.pickle", "rb"))
 bestModelFR = load("model/bestModelFR.joblib")
 
-categories = ["BUSINESS","SPORT","HEALTH","ART","SCIENCE"]
+categories = ["BUSINESS","SPORT","HEALTH","ART","SCIENCE","POLITIC"]
 
 def getBestSimilarities(model, word, language,topn=10):
 	try:
@@ -70,10 +70,12 @@ def getWords(sims):
 		words.append(t[0])
 	return words
 
+from sklearn.metrics.pairwise import cosine_similarity
+
 def search(query):
 	user_input = query.split()
 	user_input_lower = [ w.lower() for w in user_input ]
-	simsTuple = getBestSimilarities(modelFR, user_input_lower,"french",topn = 70)
+	simsTuple = getBestSimilarities(modelFR, user_input_lower,"french",topn = 50)
 	print(getBestSimilarities(modelFR, user_input_lower,"french",topn = 30))
 	sims = getWords(simsTuple)
 	concat = user_input_lower + sims
@@ -81,6 +83,20 @@ def search(query):
 	cat = bestModelFR.predict(X)
 	print(bestModelFR.predict_proba(X))
 	print(categories[cat[0]])
-	return categories[cat[0]]
+
+	res = est.getDocuments("rss",{
+		"match": {
+		"Catégorie_du_flux":categories[cat[0]]
+	}})
+	hits = res["hits"]["hits"]
+	docs = []
+	for hit in hits:
+		if hit["_source"]["data"] != None:
+			X2 = vectorizerFR.transform([hit["_source"]["data"]])
+			docs.append((hit["_source"],cosine_similarity(X,X2)[0][0]))		
+
+	# with open('readmee.txt', 'w',encoding="utf-8") as f:
+	# 	f.write(str(sorted(docs,key=lambda x: x[1],reverse=True)))
+	return categories[cat[0]],sorted(docs,key=lambda x: x[1],reverse=True)
 
 

@@ -20,13 +20,14 @@ app.get('/', (req, res) => {
 
 app.post('/search', async (req, res) => {
     let fname = req.body.fname
+    let fetchResponse = null
     console.log(req.body)
     await fetch("http://localhost:5000/research", {method:'post', body: JSON.stringify(req.body),
     headers: {'Content-Type': 'application/json','Accept': 'application/json'}})
             .then( data => data.json() )
-            .then( data => cat = data )
-    console.log(cat)
-    res.render('index', {categorie:cat})
+            .then( data => fetchResponse = data )
+    cat = fetchResponse[0]
+    res.render('index', {categorie:cat, docs:fetchResponse[1]})
 })
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)

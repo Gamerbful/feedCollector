@@ -16,9 +16,9 @@ import w2v as w
 def research():
     if request.method == "POST":
         query = request.json['fname']
-        cat = w.search(query)
-        print(jsonify(cat))
-        return jsonify(cat)
+        cat,docs = w.search(query)
+        print(jsonify(cat,docs))
+        return jsonify(cat,docs)
 
 
 app.run(debug=True)

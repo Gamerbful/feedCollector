@@ -18,6 +18,16 @@
     </form>
     <%= categorie %>   
     </header>
+    <main>
+        <ul>
+        <% for(var i=0; i<docs.length; i++) {%>
+            <li>  
+                <a href=<%= docs[i][0].link %>> <%= docs[i][0].title %>  </a>
+                <p> <%= docs[i][0].description %>  </p>
+            </li>
+                <% } %>
+        </ul>
+    </main>
     <body>
 </html>
 
