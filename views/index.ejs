@@ -12,13 +12,31 @@
     <header>
     <h1> Moteur de recherche </h1>
     <form action="/search" method="post">
-        <label for="fname">First name:</label><br>
-        <input type="text" id="fname" name="fname">
+        <input type="text" id="fname" name="fname" value= <% if (locals.form) { %> "<%= form[0] %>" <% } %>>
+        
+  
+        <input type="radio" id="en" name="lg" value="en" <% if (locals.form) { %>
+            <% if (form[1] == "en") { %>
+                checked="checked"
+             <% } %>
+             <% } %>
+             >
+
+        <label for="en">EN</label>
+        <input type="radio" id="fr" name="lg" value="fr" <% if (locals.form) { %>
+            <% if (form[1] == "fr") { %>
+                checked="checked"
+             <% } %>
+             <% } %>
+             >
+        <label for="fr">FR</label>
+
         <button type="submit"> recherche </button>
     </form>
     <%= categorie %>   
     </header>
     <main>
+        <% if (locals.docs) { %>
         <ul>
         <% for(var i=0; i<docs.length; i++) {%>
             <li>  
@@ -27,6 +45,7 @@
             </li>
                 <% } %>
         </ul>
+        <% } %>
     </main>
     <body>
 </html>
