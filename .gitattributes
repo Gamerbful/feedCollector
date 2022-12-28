@@ -1,3 +1,11 @@
+vec/vectorizerFR.pickle filter=lfs diff=lfs merge=lfs -text
+vec/yEN.pickle filter=lfs diff=lfs merge=lfs -text
+vec/yFR.pickle filter=lfs diff=lfs merge=lfs -text
+vec/vecEN.pickle filter=lfs diff=lfs merge=lfs -text
+vec/vecFR.pickle filter=lfs diff=lfs merge=lfs -text
+vec/vectorizerEN.pickle filter=lfs diff=lfs merge=lfs -text
+model/bestModelEN.joblib filter=lfs diff=lfs merge=lfs -text
+model/bestModelFR.joblib filter=lfs diff=lfs merge=lfs -text
 *.pickle filter=lfs diff=lfs merge=lfs -text
 *.xml filter=lfs diff=lfs merge=lfs -text
 *.npy filter=lfs diff=lfs merge=lfs -text
