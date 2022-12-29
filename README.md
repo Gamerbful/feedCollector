@@ -25,6 +25,10 @@ Nothing too complicated here, if you have any errors go to the error sections th
 - ``` python .\scripts\flaskAPI.py ``` start our api wich will augment user query and return predicted categorie and ordered docs
 - ``` npm start ``` start an express server with ejs view on port 3000 of localhost
 
+# Pictures worth a thousand words
+
+<h1> Here you will have a desctiption of major scripts of our architecture, you may consider reading it if you want more details but it's okay not to read everything </h1>
+
 # elasticSearchTest
 
 to launch
@@ -36,3 +40,10 @@ those parameters are
 - COUNT to count how much indexed documents we have
 - SEARCH to test a query ( by default get all doc under an index)
 - CLEAR to clear our indexed documents
+
+# helloFeedParser-1
+# classifier
+# w2v
+# server
+# flaskAPI
+# Error Section
