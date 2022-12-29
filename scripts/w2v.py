@@ -54,8 +54,8 @@ print(count)
 # modelEN.save("model/word2vecEN.model")
 
 
-modelFR = Word2Vec.load("model/word2vecFR.model")
-modelEN = Word2Vec.load("model/word2vecEN.model")
+modelFR = np.load("model/word2vecFR.model", allow_pickle=True)
+modelEN = np.load("model/word2vecEN.model", allow_pickle=True)
 from joblib import dump, load
 
 vectorizerFR = pickle.load( open("vec/vectorizerFR.pickle", "rb"))
