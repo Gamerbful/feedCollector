@@ -7,27 +7,28 @@ import pickle
 import numpy as np
 from stop_words import get_stop_words 
 
+import elasticToMongo as etm
 
 
-res = est.getDocuments("rss",{"match_all": {} })
+# res = est.getDocuments("rss",{"match_all": {} })
 
-corpusFR = []
-corpusEN = []
+# corpusFR = []
+# corpusEN = []
 
-hits = res["hits"]["hits"]
-size = len(hits)
+# hits = res["hits"]["hits"]
+# size = len(hits)
 
-count = 0
-for hit in hits:
-    if hit["_source"]["data"] != None:
-        if hit["_source"]["language"] == "fr":      
-            corpusFR.append(hit["_source"]["data"].split())
-        elif hit["_source"]["language"] == "en":
-            corpusEN.append(hit["_source"]["data"].split())
-        else:
-            count +=1
+# count = 0
+# for hit in hits:
+#     if hit["_source"]["data"] != None:
+#         if hit["_source"]["language"] == "fr":      
+#             corpusFR.append(hit["_source"]["data"].split())
+#         elif hit["_source"]["language"] == "en":
+#             corpusEN.append(hit["_source"]["data"].split())
+#         else:
+#             count +=1
 
-print(count)
+# print(count)
 		
 
 # bigramFR = Phrases(corpusFR)
@@ -80,7 +81,6 @@ def getBestSimilarities(model, word, language,topn=10):
 # print(getBestSimilarities(modelEN, ["black"], "english"))
 # print(getBestSimilarities(modelEN, ["friday"], "english"))
 
-
 def getWords(sims):
 	words = []
 	for t in sims:
@@ -110,34 +110,15 @@ def search(query,language):
 	X = vectorizer.transform([" ".join(concat)])
 	cat = bestModel.predict(X)
 	print(bestModel.predict_proba(X))
-	print(categories[cat[0]])
+	print()
 
-	res = est.getDocuments("rss",{
-		"bool": {
-			"should": [
-				{
-					"match": {
-						"Catégorie_du_flux":categories[cat[0]]
-						}
 
-				}
-				# ,
-				# {
-				# 	"match": {
-				# 		"language":language
-				# 		}
 
-				# },
-
-			]
-		}
-		})
-	hits = res["hits"]["hits"]
+	res = etm.getAllDocs({"Catégorie_du_flux":categories[cat[0]]})
 	docs = []
-	for hit in hits:
-		if hit["_source"]["data"] != None:
-			X2 = vectorizer.transform([hit["_source"]["data"]])
-			docs.append((hit["_source"],cosine_similarity(X,X2)[0][0]))		
+	for hit in res:
+		X2 = vectorizer.transform([hit["data"]])
+		docs.append((hit,cosine_similarity(X,X2)[0][0]))		
 
 	# with open('readmee.txt', 'w',encoding="utf-8") as f:
 	# 	f.write(str(sorted(docs,key=lambda x: x[1],reverse=True)))
