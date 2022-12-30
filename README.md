@@ -26,6 +26,33 @@ Nothing too complicated here, if you have any errors go to the error sections th
 - ``` npm start ``` start an express server with ejs view on port 3000 of localhost
 
 # Pictures worth a thousand words
+![alt text](https://github.com/Gamerbful/feedCollector/blob/main/readmeIMG/elastic.png?raw=true)
+<p align="center"> elasticsearch server launch <p>
+<br></br>
+
+![alt text](https://github.com/Gamerbful/feedCollector/blob/main/readmeIMG/docsData.png?raw=true)
+<p align="center"> count data on docs per categorie and language on our dataset created via our architecture <p>
+<br></br>
+
+![alt text](https://github.com/Gamerbful/feedCollector/blob/main/readmeIMG/client.png?raw=true)
+<p align="center"> client server launch + logs <p>
+<br></br>
+
+![alt text](https://github.com/Gamerbful/feedCollector/blob/main/readmeIMG/flask.png?raw=true)
+<p align="center"> flask API lauch + logs <p>
+<br></br>
+
+![alt text](https://github.com/Gamerbful/feedCollector/blob/main/readmeIMG/website.png?raw=true)
+<p align="center"> website query example in french (1) <p>
+<br></br>
+
+![alt text](https://github.com/Gamerbful/feedCollector/blob/main/readmeIMG/website2.png?raw=true)
+<p align="center"> website query example in french (2) <p>
+<br></br>
+
+![alt text](https://github.com/Gamerbful/feedCollector/blob/main/readmeIMG/website3.png?raw=true)
+<p align="center"> website query example in english <p>
+<br></br>
 
 <h1> Here you will have a desctiption of major scripts of our architecture, you may consider reading it if you want more details but it's okay not to read everything </h1>
 
